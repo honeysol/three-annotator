@@ -135,7 +135,7 @@ class GeometryState {
     this.colorParams = colorParams || this.colorParams;
     this.eraser = eraser != null ? eraser : this.eraser;
     this.overwrite = overwrite != null ? overwrite : this.overwrite;
-    this.targetColorId = this.eraser
+    this.targetColorId = this.eraser && this.overwrite
       ? this.eraserColorId
       : this.activeColors[0];
     this.updateAllColor();
