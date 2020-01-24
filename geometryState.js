@@ -125,14 +125,14 @@ class GeometryState {
   setColorOptions({
     targetColorId,
     activeColors,
-    colorParam,
+    colorParams,
     eraserColorId,
     eraser,
     overwrite,
   }) {
     this.activeColors = activeColors || this.activeColors;
     this.eraserColorId = eraserColorId || this.eraserColorId;
-    this.colorParam = colorParam || this.colorParams;
+    this.colorParams = colorParams || this.colorParams;
     this.eraser = eraser != null ? eraser : this.eraser;
     this.overwrite = overwrite != null ? overwrite : this.overwrite;
     this.targetColorId = this.eraser
