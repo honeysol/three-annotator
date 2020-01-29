@@ -12,20 +12,37 @@ const getRay = ({ raymouse, camera }) => {
   }
 };
 const raycaster = new THREE.Raycaster();
-const getIntersect = ({ raymouse, camera, scene }) => {
+const _getIntersect = ({ raymouse, camera, meshes }) => {
   raycaster.setFromCamera(raymouse, camera);
-  const intersects = raycaster.intersectObjects(scene.children);
+  const intersects = raycaster.intersectObjects(meshes);
   const intersect = intersects.find(
     intersect => intersect.object.type === "Mesh"
   );
   return intersect;
 };
 
+export const getIntersect = ({
+  x,
+  y,
+  camera,
+  meshes,
+  container,
+}) => {
+  const raymouse = new THREE.Vector2(
+    (x / container.clientWidth) * 2 - 1,
+    -(y / container.clientHeight) * 2 + 1
+  );
+  const intersect = _getIntersect({ raymouse, camera, meshes });
+  return {
+    intersect
+  };
+}
+
 export const annotateBySphere = ({
   x,
   y,
   camera,
-  scene,
+  meshes,
   container,
   radius,
   ignoreBackFace,
@@ -35,10 +52,13 @@ export const annotateBySphere = ({
     (x / container.clientWidth) * 2 - 1,
     -(y / container.clientHeight) * 2 + 1
   );
-  const intersect = getIntersect({ raymouse, camera, scene });
+  const intersect = _getIntersect({ raymouse, camera, meshes });
   if (!intersect) {
-    return;
+    return {
+      intersect
+    }
   }
+
   const mesh = intersect.object;
   const geometry = mesh.geometry;
   // 高速化のため、逆行列をかけておく
@@ -50,22 +70,22 @@ export const annotateBySphere = ({
   const direction = getRay({ raymouse, camera });
 
   const geometryState = getGeometryState(geometry);
-  return geometryState.annotate({
+  geometryState.annotate({
     center,
     direction,
     limit,
     color,
     ignoreBackFace,
   });
+  return {
+    intersect
+  }
 };
 
-export const getCurrentParams = ({ scene }) => {
+export const getCurrentParams = ({ meshes }) => {
   let area = 0;
   const areas = {};
-  scene.traverse(mesh => {
-    if (mesh.type !== "Mesh") {
-      return;
-    }
+  meshes.forEach(mesh => {
     const geometry = mesh.geometry;
     if (!geometry.isBufferGeometry) {
       return;
@@ -83,11 +103,8 @@ export const getCurrentParams = ({ scene }) => {
   };
 };
 
-export const setColorOptions = (options, { scene }) => {
-  scene.traverse(mesh => {
-    if (mesh.type !== "Mesh") {
-      return;
-    }
+export const setColorOptions = (options, { meshes }) => {
+  meshes.forEach(mesh => {
     const geometry = mesh.geometry;
     if (!geometry.isBufferGeometry) {
       return;
