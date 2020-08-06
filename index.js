@@ -113,3 +113,25 @@ export const setColorOptions = (options, { meshes }) => {
     geometryState.setColorOptions(options);
   });
 };
+
+export const getChanges = ({ meshes }) => {
+  const response = {};
+  meshes.forEach(mesh => {
+    const geometry = mesh.geometry;
+    if (!geometry.isBufferGeometry) {
+      return;
+    }
+    const geometryState = getGeometryState(geometry);
+    const changes = geometryState.getChanges();
+    if(Object.keys(changes).length > 0) {
+      response[mesh.name] = changes;
+    }
+  });
+  return response;
+};
+
+export const setAnnotation = ({ mesh, colorId, data }) => {
+  const geometry = mesh.geometry;
+  const geometryState = getGeometryState(geometry);
+  geometryState.setAnnotation(colorId, data);
+}

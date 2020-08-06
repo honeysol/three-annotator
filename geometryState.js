@@ -2,6 +2,7 @@ class GeometryColor {
   constructor(length) {
     this.painted = new Int8Array(length);
     this.totalArea = 0;
+    this.updated = false;
   }
   clear() {
     this.painted.fill(0);
@@ -48,6 +49,31 @@ class GeometryState {
   eraserColorId = "eraser";
   overwrite = true;
 
+
+  getChanges() {
+    const response = {};
+    for (const colorId of this.activeColors) {
+      const geometryColor = this.geometryColors[colorId];
+      if(geometryColor?.updated) {
+        response[colorId] = {
+          painted: geometryColor.painted,
+          totalArea: geometryColor.totalArea, 
+        };
+        geometryColor.updated = false;
+      }
+    } 
+    return response;
+  }
+
+  setAnnotation(colorId, data) {
+    const geometryColor = this.getGeometryColor(colorId);
+    if(data.painted) {
+      geometryColor.painted = data.painted;
+      geometryColor.totalArea = data.totalArea;
+      this.updateAllColor();
+    }
+  }
+
   getGeometryColor(colorId) {
     if (!this.geometryColors[colorId]) {
       const vertexCount = this.geometry.attributes.position.count;
@@ -87,11 +113,13 @@ class GeometryState {
           if (geometryColor.painted[vertexIndex] === 0) {
             geometryColor.painted[vertexIndex] = 1;
             geometryColor.totalArea += this.areas[Math.floor(vertexIndex / 3)];
+            geometryColor.updated = true;
           }
         } else {
           if (geometryColor.painted[vertexIndex] === 1) {
             geometryColor.painted[vertexIndex] = 0;
             geometryColor.totalArea -= this.areas[Math.floor(vertexIndex / 3)];
+            geometryColor.updated = true;
           }
         }
       }
@@ -108,6 +136,7 @@ class GeometryState {
       if (geometryColor.painted[vertexIndex] === 1) {
         geometryColor.painted[vertexIndex] = 0;
         geometryColor.totalArea -= this.areas[Math.floor(vertexIndex / 3)];
+        geometryColor.updated = true;
         this.updateColor(vertexIndex);
         return true;
       }
@@ -116,6 +145,7 @@ class GeometryState {
       if (geometryColor.painted[vertexIndex] === 0) {
         geometryColor.painted[vertexIndex] = 1;
         geometryColor.totalArea += this.areas[Math.floor(vertexIndex / 3)];
+        geometryColor.updated = true;
         this.updateColor(vertexIndex);
         return true;
       }
